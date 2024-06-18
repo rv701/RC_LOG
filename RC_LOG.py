@@ -29,7 +29,7 @@ if (os.path.isfile(file_path) == True):
 				#print(words[0])
 				#print(words[1])
 				#print(words[2])
-				gpx_text += "<name>" + rider_number + " Stage Log</name>\n"
+				gpx_text += "<metadata>\n  <name>" + rider_number + " Stage Log</name>\n</metadata>\n"
 				
 				#print("Date: " + date)
 				dates = re.split(r' |/|\\', date) # Match regular expression for backslash ?? weird one
@@ -71,17 +71,20 @@ if (os.path.isfile(file_path) == True):
 			wp_count+=1
 			
 			if re.search("^SSZ", waypoint_name) :
-				gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
+				gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
 				gpx_text += "  <name>" + waypoint_name + waypoint_number + "(" + speed + "/" + status + ")</name>\n"
 				gpx_text += "  <cmt>Speed:" + speed + "/" + status + "</cmt>\n"
 				
 				if (re.search("[0-9]+", status)) :
 					if(int(speed) > int(status)) :
 						gpx_text += "  <sym>Navaid, Orange</sym>\n"
+						gpx_text += "  <type>Navaid, Orange</type>\n"
 					else :
 						gpx_text += "  <sym>Navaid, Red/Green</sym>\n"
+						gpx_text += "  <type>Navaid, Red/Green</type>\n"
 				else :
 					gpx_text += "  <sym>Navaid, Red/Green</sym>\n"
+					gpx_text += "  <type>Navaid, Red/Green</type>\n"
 					
 				gpx_text += "  <extensions>\n"
 				gpx_text += "    <label xmlns=\"http://www.topografix.com/GPX/gpx_overlay/0/3\">\n"
@@ -122,18 +125,21 @@ if (os.path.isfile(file_path) == True):
 				or re.search("^WPE", waypoint_name) \
 				or re.search("^WPM", waypoint_name) \
 				or re.search("^WPS", waypoint_name) :
-				gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
+				gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
 				gpx_text += "  <name>" + waypoint_name + waypoint_number + "(" + status + ")</name>\n"
 				
 				if(status == "SKP"):
 					gpx_text += "  <cmt>Skipped</cmt>\n"
 					gpx_text += "  <sym>Navaid, Red</sym>\n"
+					gpx_text += "  <type>Navaid, Red</type>\n"
 				if(status == "CLR"):
 					gpx_text += "  <cmt>Cleared</cmt>\n"
 					gpx_text += "  <sym>Navaid, Green</sym>\n"
+					gpx_text += "  <type>Navaid, Green</type>\n"
 				if(status == "OPN"):
 					gpx_text += "  <cmt>Opened</cmt>\n"
 					gpx_text += "  <sym>Navaid, Amber</sym>\n"
+					gpx_text += "  <type>Navaid, Amber</type>\n"
 					
 				gpx_text += "  <extensions>\n"
 				gpx_text += "    <label xmlns=\"http://www.topografix.com/GPX/gpx_overlay/0/3\">\n"
@@ -192,8 +198,8 @@ if (os.path.isfile(file_path) == True):
 			speed = words[3]
 			
 			
-			gpx_text += "    <trkpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
-			gpx_text += "      <ele> 0;</ele><time>" + year + "-" + month + "-" + day + "T" + time + ";Z</time>\n"
+			gpx_text += "    <trkpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
+			gpx_text += "      <ele>0</ele><time>" + year + "-" + month + "-" + day + "T" + time + "Z</time>\n"
 			gpx_text += "    </trkpt>\n"
 				
 			#<trkseg>

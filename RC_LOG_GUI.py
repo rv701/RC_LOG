@@ -12,6 +12,7 @@ import re
 
 gpx_text = ""
 
+
 def open_file_dialog():
 	file_path = filedialog.askopenfilename(title="Select a File", filetypes=[("Text files", "*.LOG"), ("All files", "*.*")])
 	if file_path:
@@ -71,6 +72,8 @@ def process_file(file_path):
 			if re.search("^RallyCompLog", lines[index]) :
 				lines[index] = re.sub(',', '', lines[index])
 				lines[index] = re.sub(';', '', lines[index])
+				#print(lines[index])
+				output_text = lines[index] + "\n"
 				words = re.split('\\s+', lines[index])
 				#print("Words: " + str(len(words)))
 				if (len(words) >= 3):
@@ -79,7 +82,7 @@ def process_file(file_path):
 					#print(words[0])
 					#print(words[1])
 					#print(words[2])
-					gpx_text += "<name>" + rider_number + " Stage Log</name>\n"
+					gpx_text += "<metadata>\n  <name>" + rider_number + " Stage Log</name>\n</metadata>\n"
 					
 					#print("Date: " + date)
 					dates = re.split(r' |/|\\', date) # Match regular expression for backslash ?? weird one
@@ -88,7 +91,10 @@ def process_file(file_path):
 					if (len(dates) >= 3):
 						month = dates[0]
 						day = dates[1]
-						year = "20" + dates[2]	
+						if(len(dates[2]) == 2):
+							year = "20" + dates[2]
+						else :
+							year = dates[2]	
 						#print("month: " + month)
 						#print("day: " + day)
 						#print("year: " + year)
@@ -121,17 +127,20 @@ def process_file(file_path):
 				wp_count+=1
 				
 				if re.search("^SSZ", waypoint_name) :
-					gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
+					gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
 					gpx_text += "  <name>" + waypoint_name + waypoint_number + "(" + speed + "/" + status + ")</name>\n"
 					gpx_text += "  <cmt>Speed:" + speed + "/" + status + "</cmt>\n"
 					
 					if (re.search("[0-9]+", status)) :
 						if(int(speed) > int(status)) :
 							gpx_text += "  <sym>Navaid, Orange</sym>\n"
+							gpx_text += "  <type>Navaid, Orange</type>\n"
 						else :
 							gpx_text += "  <sym>Navaid, Red/Green</sym>\n"
+							gpx_text += "  <type>Navaid, Red/Green</type>\n"
 					else :
 						gpx_text += "  <sym>Navaid, Red/Green</sym>\n"
+						gpx_text += "  <type>Navaid, Red/Green</type>\n"
 						
 					gpx_text += "  <extensions>\n"
 					gpx_text += "    <label xmlns=\"http://www.topografix.com/GPX/gpx_overlay/0/3\">\n"
@@ -172,18 +181,21 @@ def process_file(file_path):
 					or re.search("^WPE", waypoint_name) \
 					or re.search("^WPM", waypoint_name) \
 					or re.search("^WPS", waypoint_name) :
-					gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
+					gpx_text += "<wpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
 					gpx_text += "  <name>" + waypoint_name + waypoint_number + "(" + status + ")</name>\n"
 					
 					if(status == "SKP"):
 						gpx_text += "  <cmt>Skipped</cmt>\n"
 						gpx_text += "  <sym>Navaid, Red</sym>\n"
+						gpx_text += "  <type>Navaid, Red</type>\n"
 					if(status == "CLR"):
 						gpx_text += "  <cmt>Cleared</cmt>\n"
 						gpx_text += "  <sym>Navaid, Green</sym>\n"
+						gpx_text += "  <type>Navaid, Green</type>\n"
 					if(status == "OPN"):
 						gpx_text += "  <cmt>Opened</cmt>\n"
 						gpx_text += "  <sym>Navaid, Amber</sym>\n"
+						gpx_text += "  <type>Navaid, Amber</type>\n"
 						
 					gpx_text += "  <extensions>\n"
 					gpx_text += "    <label xmlns=\"http://www.topografix.com/GPX/gpx_overlay/0/3\">\n"
@@ -220,7 +232,7 @@ def process_file(file_path):
 		gpx_text += "  <type>Track Log</type>\n"
 		gpx_text += "  <extensions>\n"
 		gpx_text += "    <label xmlns=\"http://www.topografix.com/GPX/gpx_overlay/0/3\">\n"
-		gpx_text += "    <label_text>RCTrackLog(Day#2)</label_text>\n"
+		gpx_text += "    <label_text>RCTrackLog</label_text>\n"
 		gpx_text += "    </label>\n"
 		gpx_text += "  </extensions>\n"	
 		gpx_text += "  <trkseg>\n"
@@ -244,8 +256,8 @@ def process_file(file_path):
 				track_count+=1
 				
 				
-				gpx_text += "    <trkpt lat=\"" + lat + "\" lon=\"" + lon + ";\">\n"
-				gpx_text += "      <ele> 0;</ele><time>" + year + "-" + month + "-" + day + "T" + time + ";Z</time>\n"
+				gpx_text += "    <trkpt lat=\"" + lat + "\" lon=\"" + lon + "\">\n"
+				gpx_text += "      <ele>0</ele><time>" + year + "-" + month + "-" + day + "T" + time + "Z</time>\n"
 				gpx_text += "    </trkpt>\n"
 					
 				#<trkseg>
@@ -265,7 +277,7 @@ def process_file(file_path):
 		
 		gpx_text += "</gpx>\n"
 	
-		output_text = "Rider: " + rider_number + "\n"
+		output_text += "Rider: " + rider_number + "\n"
 		output_text += "Waypoint Count: " + str(wp_count) + "\n"
 		output_text += "Track Segment Count: " + str(track_count)
 		
@@ -281,7 +293,9 @@ root = tk.Tk(className=' rc dat reader ')
 #root = tk.Tk(screenName=None,  baseName=None,  className='TEST',  useTk=1)
 root.geometry('650x400')
 root.title("RC Log Reader")
-root.iconphoto(False, PhotoImage(file='RC.png'))
+#root.iconphoto(False, PhotoImage(file='RC.png'))
+bundle_dir = os.path.dirname(__file__)
+root.iconphoto(False, PhotoImage(file=os.path.join(bundle_dir, 'RC.png')))
 #root.iconbitmap(r'./RC.ico')
 #root = Tk(className='Testing')
 
@@ -297,7 +311,7 @@ save_button.grid(column=0, row=1, padx=5, pady=5)
 save_file_label = tk.Label(root, text="Selected File:")
 save_file_label.grid(column=1, row=1, padx=5, pady=5)
 
-file_text = tk.Text(root, wrap=tk.WORD, height=15, width=79)
+file_text = tk.Text(root, wrap=tk.WORD, height=15, width=90)
 file_text.grid(column=0, row=2, padx=5, pady=5, columnspan=5)
 
 root.mainloop()
